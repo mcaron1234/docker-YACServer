@@ -7,6 +7,9 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_DATA_HOME="/config" \
 XDG_CONFIG_HOME="/config"
 
+# add local files
+COPY YACReaderLibrary.ini /config/YACReader/YACReaderLibrary/
+
 RUN \
  echo "**** install packages ****" && \
  apt-get update && \
@@ -37,7 +40,7 @@ RUN \
  cd ../../ && \
  wget github.com/selmf/unarr/archive/master.zip && \
  unzip master.zip -d \
- /app/YACServer/compressed_archive/unarr/ &&\
+ /app/YACServer/compressed_archive/unarr/ && \
  rm master.zip && \
  echo "**** symlinking 7zTypes.h to Types.h ****" && \
  ln -s \
@@ -48,11 +51,16 @@ RUN \
  qmake YACReaderLibraryServer.pro && \
  make && \
  make install && \
- cd ../../../
+ cd ../../../ && \
  
-# add local files
-COPY YACReaderLibrary.ini /root/.local/share/YACReader/YACReaderLibrary/
-
+ echo "**** cleanup ****" && \
+ apt-get clean && \
+ apt-get purge -y \
+ git \
+ wget \
+ build-essential && \
+ apt-get -y autoremove
+ 
 # ports and volumes
 VOLUME /config /comics
 
@@ -66,4 +74,3 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8  
 
 ENTRYPOINT ["YACReaderLibraryServer","start"]
-
